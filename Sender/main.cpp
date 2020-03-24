@@ -34,7 +34,6 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
             is unique system-wide among all SYstem V objects. Two objects, on the other hand,
             may have the same key.
      */
-    
     std::fstream file("keyfile.txt", std::fstream::out);
     file << "Hello World!";
     file.close();
@@ -42,7 +41,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
     key_t key = ftok("keyfile.txt", 'a');
     
     /* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
-    shmid = shmget(key,SHARED_MEMORY_CHUNK_SIZE, IPC_CREAT | 0666);
+    shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, IPC_CREAT | 0666);
     if (shmid < 0) {
          printf("shmget error\n");
          exit(1);
@@ -60,6 +59,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
         exit(1);
     }
     /* Store the IDs and the pointer to the shared memory region in the corresponding parameters */
+    std::cout << "Shared memory: " << shmid << "and message queue: " << msqid << "created\n";
 }
 
 /**
@@ -71,6 +71,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
 
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
     /* TODO: Detach from shared memory */
+    std::cout << "Cleaning up shared memory\n";
     shmdt(sharedMemPtr);
 }
 
@@ -80,6 +81,7 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
  */
 void send(const char* fileName) {
     /* Open the file for reading */
+    std::cout << "Preparing to send message\n";
     FILE* fp = fopen(fileName, "r");
     
     /* A buffer to store message we will send to the receiver. */
@@ -90,42 +92,54 @@ void send(const char* fileName) {
     /* Was the file open? */
     if(!fp) {
         perror("fopen");
-        exit(-1);
+        exit(1);
     }
     
     /* Read the whole file */
     while(!feof(fp)) {
+        std::cout << "Entered file loop\n";
         /* Read at most SHARED_MEMORY_CHUNK_SIZE from the file and store them in shared memory.
           * fread will return how many bytes it has actually read (since the last chunk may be less
           * than SHARED_MEMORY_CHUNK_SIZE).
           */
         if((sndMsg.size = fread(sharedMemPtr, sizeof(char), SHARED_MEMORY_CHUNK_SIZE, fp)) < 0) {
             perror("fread");
-            exit(-1);
+            exit(1);
         }
-        
+        std::cout << "msg.size = " << sndMsg.size << std::endl;
         /* TODO: Send a message to the receiver telling him that the data is ready
           * (message of type SENDER_DATA_TYPE)
           */
+        std::cout << "Sending data ready message\n";
         sndMsg.mtype = SENDER_DATA_TYPE;
-        msgsnd(msqid, &sndMsg, sizeof(sndMsg), 0);
+        if(msgsnd(msqid, &sndMsg, sizeof(sndMsg), 0) < 0) {
+            perror("sned(): msgsnd 1");
+            exit(1);
+        }
         
         /* TODO: Wait until the receiver sends us a message of type RECV_DONE_TYPE telling us
           * that he finished saving the memory chunk.
           */
+        std::cout << "Waiting for receiver message\n";
         do {
             msgrcv(msqid, &rcvMsg, sizeof(rcvMsg), RECV_DONE_TYPE, 0);
+            std::cout << rcvMsg.size << " " << rcvMsg.mtype << std::endl;
         }while(rcvMsg.mtype != RECV_DONE_TYPE);
+        std::cout << "Receiver message aquired\n";
     }
     
     /** TODO: once we are out of the above loop, we have finished sending the file.
        * Lets tell the receiver that we have nothing more to send. We will do this by
        * sending a message of type SENDER_DATA_TYPE with size field set to 0.
       */
+    std::cout << "Signaling end of data transmission\n";
     sndMsg.size = 0;
     sndMsg.mtype = SENDER_DATA_TYPE;
-    msgsnd(msqid, &sndMsg, sizeof(sndMsg), 0);
-        
+    if(msgsnd(msqid, &sndMsg, sizeof(sndMsg), 0) < 0) {
+        perror("sned(): msgsnd 2");
+        exit(1);
+    }
+    std::cout << "Message sent\n";
     /* Close the file */
     fclose(fp);
 }
@@ -139,12 +153,15 @@ int main(int argc, char** argv) {
     }
         
     /* Connect to shared memory and the message queue */
+    std::cout << "init()\n";
     init(shmid, msqid, sharedMemPtr);
     
     /* Send the file */
+    std::cout << "send()\n";
     send(argv[1]);
     
     /* Cleanup */
+    std::cout << "cleanUp()\n";
     cleanUp(shmid, msqid, sharedMemPtr);
         
     return 0;
