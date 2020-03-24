@@ -40,7 +40,6 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
             is unique system-wide among all System V objects. Two objects, on the other hand,
             may have the same key.
      */
-
     std::fstream file("keyfile.txt", std::fstream::out);
     file << "Hello World!";
     file.close();
@@ -50,18 +49,23 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
     /* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
     shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, IPC_CREAT | 0666);
     if (shmid < 0) {
-         perror("shmget error\n");
-         exit(-1);
+         printf("shmget error\n");
+         exit(1);
     }
     /* TODO: Attach to the shared memory */
-    sharedMemPtr = shmat(shmid, NULL, 0);
+    sharedMemPtr = (char*)shmat(shmid, (void*)0, 0);
     if ((long)sharedMemPtr == -1) {
-         perror("*** shmat error (server) ***\n");
-         exit(-1);
+         printf("*** shmat error (server) ***\n");
+         exit(1);
     }
-    /* TODO: Create a message queue */
+    /* TODO: Attach to the message queue */
     msqid = msgget(key, IPC_CREAT | 0666);
+    if(msqid < 0) {
+        perror("msgget");
+        exit(1);
+    }
     /* Store the IDs and the pointer to the shared memory region in the corresponding parameters */
+    std::cout << "Shared memory: " << shmid << "and message queue: " << msqid << "created\n";
 }
  
 
@@ -70,7 +74,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
  */
 void mainLoop() {
     /* The size of the mesage */
-    int msgSize = 0;
+    size_t msgSize = 0;
     
     /* Open the file for writing */
     FILE* fp = fopen(recvFileName, "w");
@@ -78,7 +82,7 @@ void mainLoop() {
     /* Error checks */
     if(!fp) {
         perror("fopen");
-        exit(-1);
+        exit(1);
     }
         
     /* TODO: Receive the message and get the message size. The message will
@@ -91,17 +95,19 @@ void mainLoop() {
      * NOTE: the received file will always be saved into the file called
      * "recvfile"
      */
+    std::cout << "Receiving message size 1\n";
     message snd;
     message rcv;
-    msgSize = msgrcv(msqid, &rcv, sizeof(rcv), 1, 0);
+    msgSize = msgrcv(msqid, &rcv, sizeof(rcv), SENDER_DATA_TYPE, 0);
     /* Keep receiving until the sender set the size to 0, indicating that
       * there is no more data to send
       */
-
+    std::cout << "Enter msg loop\n";
     while(msgSize != 0) {
         /* If the sender is not telling us that we are done, then get to work */
         if(msgSize != 0) {
             /* Save the shared memory to file */
+            std::cout << "Saving to shared memory\n";
             if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0) {
                 perror("fwrite");
             }
@@ -110,6 +116,7 @@ void mainLoop() {
               * I.e. send a message of type RECV_DONE_TYPE (the value of size field
               * does not matter in this case).
               */
+            std::cout << "Ready for next file chunk\n";
             snd.mtype = RECV_DONE_TYPE;
             msgsnd(msqid, &snd, sizeof(snd), 0);
         }
@@ -118,7 +125,8 @@ void mainLoop() {
             /* Close the file */
             fclose(fp);
         }
-        msgSize = msgrcv(msqid, &rcv, sizeof(rcv), 1, 0);
+        std::cout << "Receiving message size 2\n";
+        msgSize = msgrcv(msqid, &rcv, sizeof(rcv), SENDER_DATA_TYPE, 0);
     }
 }
 
@@ -130,7 +138,6 @@ void mainLoop() {
  * @param shmid - the id of the shared memory segment
  * @param msqid - the id of the message queue
  */
-
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
     /* TODO: Detach from shared memory */
     shmdt(sharedMemPtr);
@@ -138,6 +145,7 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
     shmctl(shmid, IPC_RMID, NULL);
     /* TODO: Deallocate the message queue */
     msgctl(msqid, IPC_RMID, NULL);
+    std::cout << "Resources released\n";
 }
 
 /**
@@ -157,14 +165,28 @@ int main(int argc, char** argv) {
       * queues and shared memory before exiting. You may add the cleaning functionality
       * in ctrlCSignal().
       */
+    signal(SIGINT, ctrlCSignal);
                 
     /* Initialize */
+    std::cout << "init()\n";
     init(shmid, msqid, sharedMemPtr);
     
     /* Go to the main loop */
+    std::cout << "mainLoop()\n";
     mainLoop();
-
-    /** TODO: Detach from shared memory segment, and deallocate shared memory and message queue (i.e. call cleanup) **/
+    std::cout << "Outputing file conents\n";
+    std::string str;
+    std::ifstream ifile(recvFileName);
+    if(ifile.is_open()) {
+        while(getline(ifile, str))
+            std::cout << str << std::endl;
         
+        ifile.close();
+    } else {
+        perror("ifile");
+    }
+    /** TODO: Detach from shared memory segment, and deallocate shared memory and message queue (i.e. call cleanup) **/
+    std::cout << "cleanUp()\n";
+    cleanUp(shmid, msqid, sharedMemPtr);
     return 0;
 }
