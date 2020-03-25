@@ -13,4 +13,4 @@ receiver.o: recv.cpp
 	g++ -c recv.cpp
 
 clean:
-	rm *o sender receiver
+	rm *o sender receiver keyfile.txt recvfile

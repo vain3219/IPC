@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include "msg.h"    /* For the message struct */
-
+using namespace std;
 
 /* The size of the shared memory chunk */
 #define SHARED_MEMORY_CHUNK_SIZE 1000
@@ -40,7 +40,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
             is unique system-wide among all System V objects. Two objects, on the other hand,
             may have the same key.
      */
-    std::fstream file("keyfile.txt", std::fstream::out);
+    fstream file("keyfile.txt", fstream::out);
     file << "Hello World!";
     file.close();
 
@@ -65,7 +65,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr) {
         exit(1);
     }
     /* Store the IDs and the pointer to the shared memory region in the corresponding parameters */
-    std::cout << "Shared memory: " << shmid << "and message queue: " << msqid << "created\n";
+    cout << "Shared memory: " << shmid << "and message queue: " << msqid << "created\n";
 }
  
 
@@ -95,19 +95,19 @@ void mainLoop() {
      * NOTE: the received file will always be saved into the file called
      * "recvfile"
      */
-    std::cout << "Receiving message size 1\n";
+    cout << "Receiving message size 1\n";
     message snd;
     message rcv;
     msgSize = msgrcv(msqid, &rcv, sizeof(rcv), SENDER_DATA_TYPE, 0);
     /* Keep receiving until the sender set the size to 0, indicating that
       * there is no more data to send
       */
-    std::cout << "Enter msg loop\n";
+    cout << "Enter msg loop\n";
     while(msgSize != 0) {
         /* If the sender is not telling us that we are done, then get to work */
         if(msgSize != 0) {
             /* Save the shared memory to file */
-            std::cout << "Saving to file from shared memory\n";
+            cout << "Saving to file from shared memory\n";
             if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0) {
                 perror("fwrite");
             }
@@ -116,7 +116,7 @@ void mainLoop() {
               * I.e. send a message of type RECV_DONE_TYPE (the value of size field
               * does not matter in this case).
               */
-            std::cout << "Ready for next file chunk\n";
+            cout << "Ready for next file chunk\n";
             snd.mtype = RECV_DONE_TYPE;
             msgsnd(msqid, &snd, sizeof(snd), 0);
         }
@@ -125,7 +125,7 @@ void mainLoop() {
             /* Close the file */
             fclose(fp);
         }
-        std::cout << "Receiving message size 2\n";
+        cout << "Receiving message size 2\n";
         msgSize = msgrcv(msqid, &rcv, sizeof(rcv), SENDER_DATA_TYPE, 0);
     }
 }
@@ -145,7 +145,7 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
     shmctl(shmid, IPC_RMID, NULL);
     /* TODO: Deallocate the message queue */
     msgctl(msqid, IPC_RMID, NULL);
-    std::cout << "Resources released\n";
+    cout << "Resources released\n";
 }
 
 /**
@@ -169,25 +169,25 @@ int main(int argc, char** argv) {
     signal(SIGINT, ctrlCSignal);
                 
     /* Initialize */
-    std::cout << "init()\n";
+    cout << "init()\n";
     init(shmid, msqid, sharedMemPtr);
     
     /* Go to the main loop */
-    std::cout << "mainLoop()\n";
+    cout << "mainLoop()\n";
     mainLoop();
-    std::cout << "Outputing file conents\n";
-    std::string str;
-    std::ifstream ifile(recvFileName);
+    cout << "Outputing file conents\n";
+    string str;
+    ifstream ifile(recvFileName);
     if(ifile.is_open()) {
         while(getline(ifile, str))
-            std::cout << str << std::endl;
+            cout << str << endl;
         
         ifile.close();
     } else {
         perror("ifile");
     }
     /** TODO: Detach from shared memory segment, and deallocate shared memory and message queue (i.e. call cleanup) **/
-    std::cout << "cleanUp()\n";
+    cout << "cleanUp()\n";
     cleanUp(shmid, msqid, sharedMemPtr);
     return 0;
 }
