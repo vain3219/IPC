@@ -156,6 +156,7 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr) {
 void ctrlCSignal(int signal) {
     /* Free system V resources */
     cleanUp(shmid, msqid, sharedMemPtr);
+    exit(signal);
 }
 
 int main(int argc, char** argv) {
