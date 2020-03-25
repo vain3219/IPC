@@ -9,8 +9,8 @@ ________________________________________________________________________________
   * cthomp3219@gmail.com
   * Section 2  
 * Kai Duty
-  * email
-  * Section Number
+  * kdcptkai31@gmail.com
+  * Section 3
 * Ryley Webber
   * email
   * Section 2
