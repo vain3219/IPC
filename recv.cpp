@@ -107,7 +107,7 @@ void mainLoop() {
         /* If the sender is not telling us that we are done, then get to work */
         if(msgSize != 0) {
             /* Save the shared memory to file */
-            std::cout << "Saving to shared memory\n";
+            std::cout << "Saving to file from shared memory\n";
             if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0) {
                 perror("fwrite");
             }

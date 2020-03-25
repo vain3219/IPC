@@ -135,8 +135,8 @@ void send(const char* fileName) {
     std::cout << "Signaling end of data transmission\n";
     sndMsg.size = 0;
     sndMsg.mtype = SENDER_DATA_TYPE;
-    if(msgsnd(msqid, &sndMsg, sizeof(sndMsg), 0) < 0) {
-        perror("sned(): msgsnd 2");
+    if(msgsnd(msqid, &sndMsg, 0, 0) < 0) {
+        perror("send(): msgsnd 2");
         exit(1);
     }
     std::cout << "Message sent\n";
