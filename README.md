@@ -17,6 +17,7 @@ ________________________________________________________________________________
   
 ### Language Used:
 * C++
+* C
 
 ### How to Execute:
 Open two terminals and navigate both to the project directory.  Once there, run the make commands as seen in the "Special Instructions" section.  Next, in one terminal run './sender keyfile.txt' and in the other terminal run './receiver'.  Both programs will then commence execution.
