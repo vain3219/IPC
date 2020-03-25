@@ -19,16 +19,16 @@ ________________________________________________________________________________
 * C++
 
 ### How to Execute:
-
+Open two terminals and navigate both to the project directory.  Once there, run the make commands as seen in the "Special Instructions" section.  Next, in one terminal run './sender keyfile.txt' and in the other terminal run './receiver'.  Both programs will then commence execution.
 
 ### Bonus:
 
 
 ### Special Instructions: 
-
+In the respective directory, run "make clean" followed by "make all".  These commands will remove any object files and executables within the project directory and then create new ones.
 
 ______________________________________________________________________________________________________________________________
-
+# DELETE THIS PORTOIN BEFORE SUBMITTING THE PROJECT
 **This assignment has the following goals:**
 1. To solidify your understanding of *IPC principles.*
 2. To develop greater appreciation for the *different IPC mechanisms.*
