@@ -28,6 +28,9 @@ Open two terminals and navigate both to the project directory.  Once there, run 
 ### Special Instructions: 
 In the respective directory, run "make clean" followed by "make all".  These commands will remove any object files and executables within the project directory and then create new ones.
 
+
+### Screen Shots
+![Alt text](execution.png?raw=true "Optional Title")
 ______________________________________________________________________________________________________________________________
 # DELETE THIS PORTOIN BEFORE SUBMITTING THE PROJECT
 **This assignment has the following goals:**
