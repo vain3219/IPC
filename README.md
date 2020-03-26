@@ -12,7 +12,7 @@ ________________________________________________________________________________
   * kdcptkai31@gmail.com
   * Section 3
 * Ryley Webber
-  * email
+  * riley.webber@gmail.com
   * Section 2
   
  ______________________________________________________________________________________________________________________________
@@ -29,15 +29,24 @@ Open two terminals and navigate both to the project directory.  Once there, run 
 ______________________________________________________________________________________________________________________________
 
 ### Bonus:
+N/A
 
 ______________________________________________________________________________________________________________________________
 
 ### Special Instructions: 
-In the respective directory, run "make clean" followed by "make all".  These commands will remove any object files and executables within the project directory and then create new ones.
+In the respective directory, run "make clean" followed by "make all".  These commands will remove any object files and executables within the project directory and then create new ones. Running "make tar" will create the tar file.
 
 ______________________________________________________________________________________________________________________________
 
 ### Screen Shots:
 ![Alt text](execution.png?raw=true "Optional Title")
 
-______________________________________________________________________________________________________________________________
+_______________________________________________________________________________________________________________________________
+
+### Contributions:
+All group members consulted each other whenever questions arose.
+Cody: I contributed by writting the majority of the reciever program logic.
+Kai: I contributed by writting the majority of the sender program logic.
+Riley: I contributed by writting the error checking in both programs. Additionally, I wrote the majority of the documentation.
+
+_______________________________________________________________________________________________________________________________
