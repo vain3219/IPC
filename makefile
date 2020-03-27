@@ -13,7 +13,7 @@ receiver.o: recv.cpp
 	g++ -c recv.cpp
 
 tar: 
-	tar cvf assignment1_Duty-Thompson-Webber.tar *.cpp *.h *.md makefile
+	tar cvf assignment1_Duty-Thompson-Webber.tar *.cpp *.h *.md *.png makefile
 
 clean:
 	rm *o sender receiver keyfile.txt recvfile
